@@ -1,4 +1,6 @@
 ﻿using BackendIM.Hubs;
+using BackendIM.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace BackendIM
 {
@@ -12,8 +14,8 @@ namespace BackendIM
         public IConfiguration Configuration { get; }
         public void ConfigureServices(IServiceCollection services)
         {
-            //services.AddDbContext<ApplicationDbContext>(options =>
-            //    options.UseSqlServer(Configuration["ConnectionString"]));
+            services.AddDbContext<DbAb033dInstantmessagingContext>(options =>
+               options.UseSqlServer(Configuration["ConnectionString"]));
             services.AddControllers();
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen();
