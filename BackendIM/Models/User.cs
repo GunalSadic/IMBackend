@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Identity;
 
 namespace BackendIM.Models;
 
-public partial class User
+public partial class User : IdentityUser
 {
     public int UserId { get; set; }
 

@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-
 namespace BackendIM.Models;
 
-public partial class DbAb033dInstantmessagingContext : DbContext
+public partial class DbAb033dInstantmessagingContext : IdentityDbContext
 {
     public DbAb033dInstantmessagingContext()
     {
@@ -168,6 +168,8 @@ public partial class DbAb033dInstantmessagingContext : DbContext
         });
 
         OnModelCreatingPartial(modelBuilder);
+
+        base.OnModelCreating(modelBuilder);
     }
 
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
