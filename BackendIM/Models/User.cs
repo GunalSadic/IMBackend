@@ -1,18 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿
 using Microsoft.AspNetCore.Identity;
 
 namespace BackendIM.Models;
 
-public partial class User : IdentityUser<int>
+public partial class User : IdentityUser
 {
-    public int UserId { get; set; }
-
-    public string Name { get; set; } = null!;
-
-    public string Email { get; set; } = null!;
-
-    public string? PhoneNumber { get; set; }
+    public string UserId { get; set; }
 
     public string? ProfilePicture { get; set; }
 
