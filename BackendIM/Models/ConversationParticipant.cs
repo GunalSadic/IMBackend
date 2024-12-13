@@ -7,7 +7,7 @@ public partial class ConversationParticipant
 {
     public int ParticipantId { get; set; }
 
-    public int UserId { get; set; }
+    public string UserId { get; set; }
 
     public int ConversationId { get; set; }
 

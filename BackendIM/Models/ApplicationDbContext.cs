@@ -1,16 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-
 namespace BackendIM.Models;
 
-public partial class DbAb033dInstantmessagingContext : DbContext
+public partial class ApplicationDbContext : IdentityDbContext<User>
 {
-    public DbAb033dInstantmessagingContext()
+    public ApplicationDbContext()
     {
     }
 
-    public DbAb033dInstantmessagingContext(DbContextOptions<DbAb033dInstantmessagingContext> options)
+    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options)
     {
     }
@@ -138,7 +139,6 @@ public partial class DbAb033dInstantmessagingContext : DbContext
             entity.HasIndex(e => e.Email, "UQ__User__A9D105347586FE7D").IsUnique();
 
             entity.Property(e => e.Email).HasMaxLength(255);
-            entity.Property(e => e.Name).HasMaxLength(100);
             entity.Property(e => e.PhoneNumber).HasMaxLength(15);
         });
 
@@ -168,6 +168,8 @@ public partial class DbAb033dInstantmessagingContext : DbContext
         });
 
         OnModelCreatingPartial(modelBuilder);
+
+        base.OnModelCreating(modelBuilder);
     }
 
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);

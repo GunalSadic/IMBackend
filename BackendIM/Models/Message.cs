@@ -13,9 +13,9 @@ public partial class Message
 
     public string Text { get; set; } = null!;
 
-    public int SenderId { get; set; }
+    public string SenderId { get; set; }
 
-    public int ReceiverId { get; set; }
+    public string ReceiverId { get; set; }
 
     public int ConversationId { get; set; }
 
