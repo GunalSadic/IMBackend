@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Identity;
 
 namespace BackendIM.Models;
 
-public partial class User : IdentityUser
+public partial class User : IdentityUser<int>
 {
     public int UserId { get; set; }
 

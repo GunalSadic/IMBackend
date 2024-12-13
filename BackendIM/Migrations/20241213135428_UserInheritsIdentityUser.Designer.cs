@@ -4,6 +4,7 @@ using BackendIM.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BackendIM.Migrations
 {
     [DbContext(typeof(DbAb033dInstantmessagingContext))]
-    partial class DbAb033dInstantmessagingContextModelSnapshot : ModelSnapshot
+    [Migration("20241213135428_UserInheritsIdentityUser")]
+    partial class UserInheritsIdentityUser
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
