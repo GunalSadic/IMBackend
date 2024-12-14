@@ -5,9 +5,9 @@ namespace BackendIM.Models;
 
 public partial class VoiceRecording
 {
-    public int VoiceRecordingId { get; set; }
+    public Guid VoiceRecordingId { get; set; }
 
-    public int MessageId { get; set; }
+    public Guid MessageId { get; set; }
 
     public string AudioType { get; set; } = null!;
 

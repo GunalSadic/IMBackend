@@ -5,9 +5,9 @@ namespace BackendIM.Models;
 
 public partial class Image
 {
-    public int ImageId { get; set; }
+    public Guid ImageId { get; set; }
 
-    public int MessageId { get; set; }
+    public Guid MessageId { get; set; }
 
     public string ImageType { get; set; } = null!;
 

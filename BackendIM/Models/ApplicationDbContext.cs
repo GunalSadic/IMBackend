@@ -45,10 +45,6 @@ public partial class ApplicationDbContext : IdentityDbContext<User>
             entity.HasKey(e => e.ConversationId).HasName("PK__Conversa__C050D87719602153");
 
             entity.ToTable("Conversation");
-
-            entity.HasOne(d => d.LastSentMessage).WithMany(p => p.Conversations)
-                .HasForeignKey(d => d.LastSentMessageId)
-                .HasConstraintName("FK_Conversations_LastMessage");
         });
 
         modelBuilder.Entity<ConversationParticipant>(entity =>
@@ -105,15 +101,14 @@ public partial class ApplicationDbContext : IdentityDbContext<User>
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
 
-            entity.HasOne(d => d.Receiver).WithMany(p => p.MessageReceivers)
-                .HasForeignKey(d => d.ReceiverId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Messages_Receiver");
-
             entity.HasOne(d => d.Sender).WithMany(p => p.MessageSenders)
                 .HasForeignKey(d => d.SenderId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Messages_Sender");
+
+            entity.HasOne(e=>e.Conversation).WithMany(e=>e.Messages)
+            .HasForeignKey(d => d.ConversationId)
+             .HasConstraintName("FK_Messages_Conversation");
         });
 
         modelBuilder.Entity<ScheduledMessage>(entity =>

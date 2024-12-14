@@ -5,9 +5,9 @@ namespace BackendIM.Models;
 
 public partial class Document
 {
-    public int DocumentId { get; set; }
+    public Guid DocumentId { get; set; }
 
-    public int MessageId { get; set; }
+    public Guid MessageId { get; set; }
 
     public string DocumentType { get; set; } = null!;
 

@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace BackendIM.Migrations
 {
     /// <inheritdoc />
-    public partial class first : Migration
+    public partial class FixEntities : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -31,7 +31,6 @@ namespace BackendIM.Migrations
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     UserId = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     ProfilePicture = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -51,6 +50,20 @@ namespace BackendIM.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_AspNetUsers", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Conversation",
+                columns: table => new
+                {
+                    ConversationId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    GroupPicture = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    IsGroupChat = table.Column<bool>(type: "bit", nullable: false),
+                    GroupName = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK__Conversa__C050D87719602153", x => x.ConversationId);
                 });
 
             migrationBuilder.CreateTable(
@@ -160,28 +173,62 @@ namespace BackendIM.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "ConversationParticipant",
+                columns: table => new
+                {
+                    ParticipantId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    ConversationId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK__Conversa__7227995EC8C49258", x => x.ParticipantId);
+                    table.ForeignKey(
+                        name: "FK_ConversationParticipants_Conversation",
+                        column: x => x.ConversationId,
+                        principalTable: "Conversation",
+                        principalColumn: "ConversationId");
+                    table.ForeignKey(
+                        name: "FK_ConversationParticipants_User",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Message",
                 columns: table => new
                 {
-                    MessageId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                    MessageId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     SentTime = table.Column<DateTime>(type: "datetime", nullable: false, defaultValueSql: "(getdate())"),
                     IsEdited = table.Column<bool>(type: "bit", nullable: false),
                     Text = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     SenderId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    ReceiverId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    ConversationId = table.Column<int>(type: "int", nullable: false),
+                    ConversationId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     EmbeddedResourceType = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
-                    IsScheduled = table.Column<bool>(type: "bit", nullable: false)
+                    IsScheduled = table.Column<bool>(type: "bit", nullable: false),
+                    ConversationId1 = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK__Message__C87C0C9CA2F9247B", x => x.MessageId);
                     table.ForeignKey(
-                        name: "FK_Messages_Receiver",
-                        column: x => x.ReceiverId,
+                        name: "FK_Message_AspNetUsers_UserId",
+                        column: x => x.UserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Message_Conversation_ConversationId1",
+                        column: x => x.ConversationId1,
+                        principalTable: "Conversation",
+                        principalColumn: "ConversationId");
+                    table.ForeignKey(
+                        name: "FK_Messages_Conversation",
+                        column: x => x.ConversationId,
+                        principalTable: "Conversation",
+                        principalColumn: "ConversationId",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Messages_Sender",
                         column: x => x.SenderId,
@@ -190,32 +237,11 @@ namespace BackendIM.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Conversation",
-                columns: table => new
-                {
-                    ConversationId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    LastSentMessageId = table.Column<int>(type: "int", nullable: true),
-                    GroupPicture = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    IsGroupChat = table.Column<bool>(type: "bit", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK__Conversa__C050D87719602153", x => x.ConversationId);
-                    table.ForeignKey(
-                        name: "FK_Conversations_LastMessage",
-                        column: x => x.LastSentMessageId,
-                        principalTable: "Message",
-                        principalColumn: "MessageId");
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Documents",
                 columns: table => new
                 {
-                    DocumentId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    MessageId = table.Column<int>(type: "int", nullable: false),
+                    DocumentId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    MessageId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     DocumentType = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     DocumentSize = table.Column<long>(type: "bigint", nullable: false),
                     Document = table.Column<byte[]>(type: "varbinary(max)", nullable: false)
@@ -234,9 +260,8 @@ namespace BackendIM.Migrations
                 name: "Images",
                 columns: table => new
                 {
-                    ImageId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    MessageId = table.Column<int>(type: "int", nullable: false),
+                    ImageId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    MessageId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     ImageType = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     ImageSize = table.Column<long>(type: "bigint", nullable: false),
                     Image = table.Column<byte[]>(type: "varbinary(max)", nullable: false)
@@ -255,9 +280,8 @@ namespace BackendIM.Migrations
                 name: "ScheduledMessages",
                 columns: table => new
                 {
-                    ScheduledMessageId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    MessageId = table.Column<int>(type: "int", nullable: false),
+                    ScheduledMessageId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    MessageId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     ScheduledDateTime = table.Column<DateTime>(type: "datetime", nullable: false)
                 },
                 constraints: table =>
@@ -274,9 +298,8 @@ namespace BackendIM.Migrations
                 name: "Videos",
                 columns: table => new
                 {
-                    VideoId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    MessageId = table.Column<int>(type: "int", nullable: false),
+                    VideoId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    MessageId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     VideoType = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     VideoSize = table.Column<long>(type: "bigint", nullable: false),
                     Video = table.Column<byte[]>(type: "varbinary(max)", nullable: false)
@@ -295,9 +318,8 @@ namespace BackendIM.Migrations
                 name: "VoiceRecordings",
                 columns: table => new
                 {
-                    VoiceRecordingId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    MessageId = table.Column<int>(type: "int", nullable: false),
+                    VoiceRecordingId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    MessageId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     AudioType = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     AudioSize = table.Column<long>(type: "bigint", nullable: false),
                     Audio = table.Column<byte[]>(type: "varbinary(max)", nullable: false)
@@ -310,30 +332,6 @@ namespace BackendIM.Migrations
                         column: x => x.MessageId,
                         principalTable: "Message",
                         principalColumn: "MessageId");
-                });
-
-            migrationBuilder.CreateTable(
-                name: "ConversationParticipant",
-                columns: table => new
-                {
-                    ParticipantId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    ConversationId = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK__Conversa__7227995EC8C49258", x => x.ParticipantId);
-                    table.ForeignKey(
-                        name: "FK_ConversationParticipants_Conversation",
-                        column: x => x.ConversationId,
-                        principalTable: "Conversation",
-                        principalColumn: "ConversationId");
-                    table.ForeignKey(
-                        name: "FK_ConversationParticipants_User",
-                        column: x => x.UserId,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateIndex(
@@ -383,11 +381,6 @@ namespace BackendIM.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Conversation_LastSentMessageId",
-                table: "Conversation",
-                column: "LastSentMessageId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_ConversationParticipant_ConversationId",
                 table: "ConversationParticipant",
                 column: "ConversationId");
@@ -408,14 +401,26 @@ namespace BackendIM.Migrations
                 column: "MessageId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Message_ReceiverId",
+                name: "IX_Message_ConversationId",
                 table: "Message",
-                column: "ReceiverId");
+                column: "ConversationId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Message_ConversationId1",
+                table: "Message",
+                column: "ConversationId1",
+                unique: true,
+                filter: "[ConversationId1] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Message_SenderId",
                 table: "Message",
                 column: "SenderId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Message_UserId",
+                table: "Message",
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "UQ_ScheduledMessages_Message",
@@ -474,13 +479,13 @@ namespace BackendIM.Migrations
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
-                name: "Conversation");
-
-            migrationBuilder.DropTable(
                 name: "Message");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");
+
+            migrationBuilder.DropTable(
+                name: "Conversation");
         }
     }
 }

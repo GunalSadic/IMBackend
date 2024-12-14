@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BackendIM.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20241213145820_first")]
-    partial class first
+    [Migration("20241214125928_FixEntities")]
+    partial class FixEntities
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -27,11 +27,13 @@ namespace BackendIM.Migrations
 
             modelBuilder.Entity("BackendIM.Models.Conversation", b =>
                 {
-                    b.Property<int>("ConversationId")
+                    b.Property<Guid>("ConversationId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("uniqueidentifier");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ConversationId"));
+                    b.Property<string>("GroupName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("GroupPicture")
                         .HasColumnType("nvarchar(max)");
@@ -39,27 +41,20 @@ namespace BackendIM.Migrations
                     b.Property<bool>("IsGroupChat")
                         .HasColumnType("bit");
 
-                    b.Property<int?>("LastSentMessageId")
-                        .HasColumnType("int");
-
                     b.HasKey("ConversationId")
                         .HasName("PK__Conversa__C050D87719602153");
-
-                    b.HasIndex("LastSentMessageId");
 
                     b.ToTable("Conversation", (string)null);
                 });
 
             modelBuilder.Entity("BackendIM.Models.ConversationParticipant", b =>
                 {
-                    b.Property<int>("ParticipantId")
+                    b.Property<Guid>("ParticipantId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("uniqueidentifier");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ParticipantId"));
-
-                    b.Property<int>("ConversationId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("ConversationId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("UserId")
                         .IsRequired()
@@ -77,11 +72,9 @@ namespace BackendIM.Migrations
 
             modelBuilder.Entity("BackendIM.Models.Document", b =>
                 {
-                    b.Property<int>("DocumentId")
+                    b.Property<Guid>("DocumentId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("DocumentId"));
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<byte[]>("Document1")
                         .IsRequired()
@@ -96,8 +89,8 @@ namespace BackendIM.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<int>("MessageId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("MessageId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("DocumentId")
                         .HasName("PK__Document__1ABEEF0FB65C6355");
@@ -109,11 +102,9 @@ namespace BackendIM.Migrations
 
             modelBuilder.Entity("BackendIM.Models.Image", b =>
                 {
-                    b.Property<int>("ImageId")
+                    b.Property<Guid>("ImageId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ImageId"));
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<byte[]>("Image1")
                         .IsRequired()
@@ -128,8 +119,8 @@ namespace BackendIM.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<int>("MessageId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("MessageId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("ImageId")
                         .HasName("PK__Images__7516F70CCC0FC1DD");
@@ -141,14 +132,15 @@ namespace BackendIM.Migrations
 
             modelBuilder.Entity("BackendIM.Models.Message", b =>
                 {
-                    b.Property<int>("MessageId")
+                    b.Property<Guid>("MessageId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("uniqueidentifier");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MessageId"));
+                    b.Property<Guid>("ConversationId")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("ConversationId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("ConversationId1")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("EmbeddedResourceType")
                         .HasMaxLength(50)
@@ -159,10 +151,6 @@ namespace BackendIM.Migrations
 
                     b.Property<bool>("IsScheduled")
                         .HasColumnType("bit");
-
-                    b.Property<string>("ReceiverId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("SenderId")
                         .IsRequired()
@@ -177,26 +165,33 @@ namespace BackendIM.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
+
                     b.HasKey("MessageId")
                         .HasName("PK__Message__C87C0C9CA2F9247B");
 
-                    b.HasIndex("ReceiverId");
+                    b.HasIndex("ConversationId");
+
+                    b.HasIndex("ConversationId1")
+                        .IsUnique()
+                        .HasFilter("[ConversationId1] IS NOT NULL");
 
                     b.HasIndex("SenderId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Message", (string)null);
                 });
 
             modelBuilder.Entity("BackendIM.Models.ScheduledMessage", b =>
                 {
-                    b.Property<int>("ScheduledMessageId")
+                    b.Property<Guid>("ScheduledMessageId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("uniqueidentifier");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ScheduledMessageId"));
-
-                    b.Property<int>("MessageId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("MessageId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("ScheduledDateTime")
                         .HasColumnType("datetime");
@@ -234,11 +229,6 @@ namespace BackendIM.Migrations
 
                     b.Property<DateTimeOffset?>("LockoutEnd")
                         .HasColumnType("datetimeoffset");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("NormalizedEmail")
                         .HasMaxLength(256)
@@ -293,14 +283,12 @@ namespace BackendIM.Migrations
 
             modelBuilder.Entity("BackendIM.Models.Video", b =>
                 {
-                    b.Property<int>("VideoId")
+                    b.Property<Guid>("VideoId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("uniqueidentifier");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("VideoId"));
-
-                    b.Property<int>("MessageId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("MessageId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<byte[]>("Video1")
                         .IsRequired()
@@ -325,11 +313,9 @@ namespace BackendIM.Migrations
 
             modelBuilder.Entity("BackendIM.Models.VoiceRecording", b =>
                 {
-                    b.Property<int>("VoiceRecordingId")
+                    b.Property<Guid>("VoiceRecordingId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("VoiceRecordingId"));
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<byte[]>("Audio")
                         .IsRequired()
@@ -343,8 +329,8 @@ namespace BackendIM.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<int>("MessageId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("MessageId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("VoiceRecordingId")
                         .HasName("PK__VoiceRec__BBDF7EF6263BEFEB");
@@ -487,16 +473,6 @@ namespace BackendIM.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("BackendIM.Models.Conversation", b =>
-                {
-                    b.HasOne("BackendIM.Models.Message", "LastSentMessage")
-                        .WithMany("Conversations")
-                        .HasForeignKey("LastSentMessageId")
-                        .HasConstraintName("FK_Conversations_LastMessage");
-
-                    b.Navigation("LastSentMessage");
-                });
-
             modelBuilder.Entity("BackendIM.Models.ConversationParticipant", b =>
                 {
                     b.HasOne("BackendIM.Models.Conversation", "Conversation")
@@ -540,11 +516,16 @@ namespace BackendIM.Migrations
 
             modelBuilder.Entity("BackendIM.Models.Message", b =>
                 {
-                    b.HasOne("BackendIM.Models.User", "Receiver")
-                        .WithMany("MessageReceivers")
-                        .HasForeignKey("ReceiverId")
+                    b.HasOne("BackendIM.Models.Conversation", "Conversation")
+                        .WithMany("Messages")
+                        .HasForeignKey("ConversationId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("FK_Messages_Receiver");
+                        .HasConstraintName("FK_Messages_Conversation");
+
+                    b.HasOne("BackendIM.Models.Conversation", null)
+                        .WithOne("LastSentMessage")
+                        .HasForeignKey("BackendIM.Models.Message", "ConversationId1");
 
                     b.HasOne("BackendIM.Models.User", "Sender")
                         .WithMany("MessageSenders")
@@ -552,7 +533,11 @@ namespace BackendIM.Migrations
                         .IsRequired()
                         .HasConstraintName("FK_Messages_Sender");
 
-                    b.Navigation("Receiver");
+                    b.HasOne("BackendIM.Models.User", null)
+                        .WithMany("MessageReceivers")
+                        .HasForeignKey("UserId");
+
+                    b.Navigation("Conversation");
 
                     b.Navigation("Sender");
                 });
@@ -644,12 +629,14 @@ namespace BackendIM.Migrations
             modelBuilder.Entity("BackendIM.Models.Conversation", b =>
                 {
                     b.Navigation("ConversationParticipants");
+
+                    b.Navigation("LastSentMessage");
+
+                    b.Navigation("Messages");
                 });
 
             modelBuilder.Entity("BackendIM.Models.Message", b =>
                 {
-                    b.Navigation("Conversations");
-
                     b.Navigation("Documents");
 
                     b.Navigation("Images");
