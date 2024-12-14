@@ -5,9 +5,9 @@ namespace BackendIM.Models;
 
 public partial class Video
 {
-    public int VideoId { get; set; }
+    public Guid VideoId { get; set; }
 
-    public int MessageId { get; set; }
+    public Guid MessageId { get; set; }
 
     public string VideoType { get; set; } = null!;
 

@@ -5,9 +5,9 @@ namespace BackendIM.Models;
 
 public partial class ScheduledMessage
 {
-    public int ScheduledMessageId { get; set; }
+    public Guid ScheduledMessageId { get; set; }
 
-    public int MessageId { get; set; }
+    public Guid MessageId { get; set; }
 
     public DateTime ScheduledDateTime { get; set; }
 
