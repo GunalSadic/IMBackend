@@ -63,5 +63,16 @@
                 }
             }
         }
+
+        public void Remove(string connectionId) {
+            foreach (var connection in _connections) 
+            { 
+                if(connection.Value.Contains(connectionId))
+                    lock (connection.Value)
+                    {
+                        connection.Value.Remove(connectionId);
+                    }
+            }
+        }
     }
 }
