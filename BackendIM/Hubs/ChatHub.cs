@@ -4,6 +4,7 @@ using BackendIM.Services;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
 
 namespace BackendIM.Hubs
 {
@@ -40,9 +41,10 @@ namespace BackendIM.Hubs
         }
         public async Task SendMessage(Message message)
         {
-            Conversation conversation = _dbContext.Conversations.Where(x => x.ConversationId == message.ConversationId).First();
+            Conversation conversation = _dbContext.Conversations.Where(x => x.ConversationId == message.ConversationId).Include(c=>c.ConversationParticipants).First();
             List<string> ConnectedUserIds = GetConnectedUserConnectionIds(conversation.ConversationParticipants, message.SenderId);
             foreach (string connectionId in ConnectedUserIds) {
+                Console.WriteLine($"Sending message to connection: {connectionId}");
                 await Clients.Client(connectionId).SendAsync("ReceiveMessage", message);
             }
             _dbContext.Messages.Add(message);
