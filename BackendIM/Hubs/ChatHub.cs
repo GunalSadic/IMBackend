@@ -45,7 +45,8 @@ namespace BackendIM.Hubs
             foreach (string connectionId in ConnectedUserIds) {
                 await Clients.Client(connectionId).SendAsync("ReceiveMessage", message);
             }
-            //use message persistance to save message. 
+            _dbContext.Messages.Add(message);
+            _dbContext.SaveChanges();
         }
 
         private List<string> GetConnectedUserConnectionIds(ICollection<ConversationParticipant> participants, string senderId)
