@@ -2,13 +2,12 @@
 
 namespace BackendIM.DTO
 {
-    public class UserCredentials
+    public class LoginCredentials
     {
         [Required]
         public string UserName { get; set; }
         [Required]
         public string Password { get; set; }
 
-        public string PhoneNumber { get; set; }
     }
 }

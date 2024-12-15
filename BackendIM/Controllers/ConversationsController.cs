@@ -1,4 +1,5 @@
 ﻿using BackendIM.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -16,7 +17,7 @@ namespace BackendIM.Controllers
             _context = context;
         }
 
-        [HttpGet("user/{userId}/conversations")]
+        [HttpGet("user/{userId}/getConversationsForUser")]
         public async Task<IActionResult> GetConversationsForUser(string userId)
         {
             var conversations = await _context.Conversations
@@ -34,7 +35,7 @@ namespace BackendIM.Controllers
             return Ok(conversations);
         }
 
-        [HttpGet("{conversationId}")]
+        [HttpGet("{conversationId}/{userId}/getConversationById")]
         public async Task<IActionResult> GetConversationById(Guid conversationId, string userId)
         {
             var conversation = await _context.Conversations
@@ -58,7 +59,7 @@ namespace BackendIM.Controllers
             return Ok(conversation);
         }
 
-        [HttpPost]
+        [HttpPost("createConversation")]
         public async Task<IActionResult> CreateConversation([FromBody] CreateConversationDto dto)
         {
             if (dto.UserId1 == dto.UserId2)
@@ -95,7 +96,7 @@ namespace BackendIM.Controllers
             return CreatedAtAction(nameof(GetConversationById), new { conversationId = conversation.ConversationId }, conversation);
         }
 
-        [HttpGet("{conversationId}/messages")]
+        [HttpGet("{conversationId}/GetMessages")]
         public async Task<IActionResult> GetMessages(Guid conversationId, int startIndex, int count)
         {
             var messages = await _context.Messages
@@ -106,6 +107,57 @@ namespace BackendIM.Controllers
                 .ToListAsync();
 
             return Ok(messages);
+        }
+
+        [HttpGet("users/search")]
+        public async Task<IActionResult> SearchUsersByUsername([FromQuery] string query)
+        {
+            if (string.IsNullOrWhiteSpace(query))
+            {
+                return BadRequest("Query parameter is required.");
+            }
+
+            var matchingUsers = await _context.Users
+                .Where(u => EF.Functions.Like(u.UserName.ToLower(), $"%{query.ToLower()}%"))
+                .Select(u => new
+                {
+                    u.Id,
+                    u.UserName,
+                    u.ProfilePicture
+                })
+                .ToListAsync();
+
+            return Ok(matchingUsers);
+        }
+
+        [HttpGet("user/profile")]
+        public IActionResult GetUserProfile()
+        {
+            // Access the User ID from the token
+            var userId = User.FindFirst("Name")?.Value; // Replace "sub" with the claim key used for user ID
+
+            if (userId == null)
+            {
+                return Unauthorized("User ID not found in the token.");
+            }
+
+            // Example: Fetch user details from the database
+            var user = _context.Users
+                .Where(u => u.UserName == userId)
+                .Select(u => new
+                {
+                    u.Id,
+                    u.UserName,
+                    u.ProfilePicture
+                })
+                .FirstOrDefault();
+
+            if (user == null)
+            {
+                return NotFound("User not found.");
+            }
+
+            return Ok(user);
         }
     }
 

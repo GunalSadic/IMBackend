@@ -11,7 +11,7 @@ public partial class Conversation
 
     public bool IsGroupChat { get; set; }
 
-    public string GroupName { get; set; }
+    public string? GroupName { get; set; }
     public virtual ICollection<Message> Messages { get; set; } = new List<Message>();
 
     public virtual ICollection<ConversationParticipant> ConversationParticipants { get; set; } = new List<ConversationParticipant>();

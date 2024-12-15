@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace BackendIM.Models;
 
@@ -11,6 +12,7 @@ public partial class ConversationParticipant
 
     public Guid ConversationId { get; set; }
 
+    [JsonIgnore]
     public virtual Conversation Conversation { get; set; } = null!;
 
     public virtual User User { get; set; } = null!;

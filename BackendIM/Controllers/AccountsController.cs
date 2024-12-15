@@ -28,7 +28,7 @@ namespace BackendIM.Controllers
         [HttpPost("create")]
         public async Task<ActionResult<AuthenticationResponse>> Create([FromBody] UserCredentials userCredentials)
         {
-            var user = new User { UserName = userCredentials.UserName };
+            var user = new User { UserName = userCredentials.UserName, PhoneNumber = userCredentials.PhoneNumber };
             var result = await _userManager.CreateAsync(user, userCredentials.Password);
 
             if (result.Succeeded)
@@ -41,12 +41,12 @@ namespace BackendIM.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<ActionResult<AuthenticationResponse>> Login([FromBody] UserCredentials userCredentials)
+        public async Task<ActionResult<AuthenticationResponse>> Login([FromBody] LoginCredentials userCredentials)
         {
             var result = await _signInManager.PasswordSignInAsync(userCredentials.UserName, userCredentials.Password, isPersistent: false, lockoutOnFailure: false);
             if (result.Succeeded)
             {
-                return BuildToken(userCredentials);
+                return Ok(BuildLoginToken(userCredentials));
             }
             else
             {
@@ -73,5 +73,26 @@ namespace BackendIM.Controllers
                 expiration = expiration
             };
         }
+        private AuthenticationResponse BuildLoginToken(LoginCredentials userCredentials)
+        {
+            var claims = new List<Claim>()
+            {
+                new Claim("Name", userCredentials.UserName)
+            };
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["keyjwt"]!));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var expiration = DateTime.UtcNow.AddDays(1);
+
+            var token = new JwtSecurityToken(issuer: null, audience: null, claims: claims, expires: expiration, signingCredentials: creds);
+
+            return new AuthenticationResponse
+            {
+                Token = new JwtSecurityTokenHandler().WriteToken(token),
+                expiration = expiration
+            };
+        }
+
     }
 }
