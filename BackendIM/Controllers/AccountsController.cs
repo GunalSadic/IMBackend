@@ -46,7 +46,7 @@ namespace BackendIM.Controllers
             var result = await _signInManager.PasswordSignInAsync(userCredentials.UserName, userCredentials.Password, isPersistent: false, lockoutOnFailure: false);
             if (result.Succeeded)
             {
-                return Ok(BuildLoginToken(userCredentials));
+                return Ok(await BuildLoginToken(userCredentials));
             }
             else
             {
@@ -58,6 +58,7 @@ namespace BackendIM.Controllers
             var claims = new List<Claim>()
             {
                 new Claim("Name", userCredentials.UserName)
+
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["keyjwt"]!));
@@ -73,12 +74,20 @@ namespace BackendIM.Controllers
                 expiration = expiration
             };
         }
-        private AuthenticationResponse BuildLoginToken(LoginCredentials userCredentials)
+        private async Task<AuthenticationResponse> BuildLoginToken(LoginCredentials userCredentials)
         {
-            var claims = new List<Claim>()
+            var user = await _userManager.FindByNameAsync(userCredentials.UserName);
+
+            if (user == null)
             {
-                new Claim("Name", userCredentials.UserName)
-            };
+                throw new Exception("User not found.");
+            }
+
+            var claims = new List<Claim>()
+    {
+        new Claim("Name", user.UserName),
+        new Claim("Id", user.Id) // Add the userId to the claims
+    };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["keyjwt"]!));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);

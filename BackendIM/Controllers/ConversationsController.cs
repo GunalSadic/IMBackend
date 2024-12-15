@@ -39,7 +39,7 @@ namespace BackendIM.Controllers
         public async Task<IActionResult> GetConversationById(Guid conversationId, string userId)
         {
             var conversation = await _context.Conversations
-                .Where(c => c.ConversationId == conversationId)
+                .Where(c => c.ConversationId == conversationId).Include(x=>x.Messages)
                 .Select(c => new
                 {
                     c.ConversationId,
@@ -131,19 +131,11 @@ namespace BackendIM.Controllers
         }
 
         [HttpGet("user/profile")]
-        public IActionResult GetUserProfile()
+        public IActionResult GetUserProfile(string userName)
         {
-            // Access the User ID from the token
-            var userId = User.FindFirst("Name")?.Value; // Replace "sub" with the claim key used for user ID
-
-            if (userId == null)
-            {
-                return Unauthorized("User ID not found in the token.");
-            }
-
             // Example: Fetch user details from the database
             var user = _context.Users
-                .Where(u => u.UserName == userId)
+                .Where(u => u.UserName == userName)
                 .Select(u => new
                 {
                     u.Id,
