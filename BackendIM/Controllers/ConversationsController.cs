@@ -20,6 +20,7 @@ namespace BackendIM.Controllers
         [HttpGet("user/{userId}/getConversationsForUser")]
         public async Task<IActionResult> GetConversationsForUser(string userId)
         {
+            
             var conversations = await _context.Conversations
                 .Where(c => c.ConversationParticipants.Any(p => p.UserId == userId))
                 .Select(c => new
@@ -38,6 +39,7 @@ namespace BackendIM.Controllers
         [HttpGet("{conversationId}/{userId}/getConversationById")]
         public async Task<IActionResult> GetConversationById(Guid conversationId, string userId)
         {
+
             var conversation = await _context.Conversations
                 .Where(c => c.ConversationId == conversationId).Include(x=>x.Messages)
                 .Select(c => new
@@ -45,17 +47,15 @@ namespace BackendIM.Controllers
                     c.ConversationId,
                     Name = c.IsGroupChat ? c.GroupName : c.ConversationParticipants.FirstOrDefault(p => p.UserId != userId).User.UserName,
                     Picture = c.IsGroupChat ? c.GroupPicture : c.ConversationParticipants.FirstOrDefault(p => p.UserId != userId).User.ProfilePicture,
-                    Messages = c.Messages
+                    Messages = c.Messages.Where(x=> x.IsScheduled == false || x.ScheduledMessage == null || x.ScheduledMessage.ScheduledDateTime <= DateTime.Now)
                         .OrderByDescending(m => m.SentTime)
                         .Take(50)
                 })
                 .FirstOrDefaultAsync();
-
             if (conversation == null)
             {
                 return NotFound();
             }
-
             return Ok(conversation);
         }
 
