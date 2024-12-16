@@ -16,11 +16,10 @@ namespace BackendIM.Controllers
         {
             _context = context;
         }
-
         [HttpPost("scheduledMessages")]
         public async Task<IActionResult> ScheduleMessage([FromBody] ScheduledMessage message)
         {
-            _context.Messages.Add(message.Message);
+            
             _context.ScheduledMessages.Add(message);
             await _context.SaveChangesAsync();
 

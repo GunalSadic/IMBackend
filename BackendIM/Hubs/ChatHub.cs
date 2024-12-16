@@ -49,8 +49,11 @@ namespace BackendIM.Hubs
             }
             if (!message.IsEdited) 
                 _dbContext.Messages.Add(message);
-            else 
-                _dbContext.Messages.Where(x=> x.MessageId == message.MessageId).First().Text = message.Text;
+            else
+            {
+                var msg = _dbContext.Messages.First(x => x.MessageId == message.MessageId); msg.Text = message.Text; msg.IsEdited = true;
+            }
+                
             await _dbContext.SaveChangesAsync();
         }
 
