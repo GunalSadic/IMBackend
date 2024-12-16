@@ -47,8 +47,11 @@ namespace BackendIM.Hubs
                 Console.WriteLine($"Sending message to connection: {connectionId}");
                 await Clients.Client(connectionId).SendAsync("ReceiveMessage", message);
             }
-            _dbContext.Messages.Add(message);
-            _dbContext.SaveChanges();
+            if (!message.IsEdited) 
+                _dbContext.Messages.Add(message);
+            else 
+                _dbContext.Messages.Where(x=> x.MessageId == message.MessageId).First().Text = message.Text;
+            await _dbContext.SaveChangesAsync();
         }
 
         private List<string> GetConnectedUserConnectionIds(ICollection<ConversationParticipant> participants, string senderId)

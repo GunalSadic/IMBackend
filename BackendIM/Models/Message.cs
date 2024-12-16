@@ -21,14 +21,14 @@ public partial class Message
 
     public bool IsScheduled { get; set; }
 
-    public Conversation Conversation { get; set; } = null!;
+    public Conversation? Conversation { get; set; } = null!;
     public virtual ICollection<Document> Documents { get; set; } = new List<Document>();
 
     public virtual ICollection<Image> Images { get; set; } = new List<Image>();
 
     public virtual ScheduledMessage? ScheduledMessage { get; set; }
 
-    public virtual User Sender { get; set; } = null!;
+    public virtual User? Sender { get; set; } = null!;
 
     public virtual ICollection<Video> Videos { get; set; } = new List<Video>();
 
