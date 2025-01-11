@@ -12,10 +12,7 @@ namespace BackendIM
             Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
-                    webBuilder.UseKestrel()
-                    .UseContentRoot(Directory.GetCurrentDirectory())
-                    .UseUrls("http://localhost:5106", "http://192.168.1.107:5106")
-                    .UseIISIntegration()
+                    webBuilder
                     .UseStartup<Startup>();
                 });
     }

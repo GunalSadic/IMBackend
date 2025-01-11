@@ -1,6 +1,6 @@
 ﻿using System.Collections.ObjectModel;
+using BackendIM.Helpers;
 using BackendIM.Models;
-using BackendIM.Services;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
@@ -39,16 +39,25 @@ namespace BackendIM.Hubs
             }
             _dbContext.SaveChanges();
         }
-        public async Task SendMessage(Message message)
+        public async Task SendMessage(Message message, byte[] fileData = null, string? fileType = null)
         {
             Conversation conversation = _dbContext.Conversations.Where(x => x.ConversationId == message.ConversationId).Include(c=>c.ConversationParticipants).First();
             List<string> ConnectedUserIds = GetConnectedUserConnectionIds(conversation.ConversationParticipants, message.SenderId);
             foreach (string connectionId in ConnectedUserIds) {
                 Console.WriteLine($"Sending message to connection: {connectionId}");
-                await Clients.Client(connectionId).SendAsync("ReceiveMessage", message);
+                await Clients.Client(connectionId).SendAsync("ReceiveMessage", message, fileData, fileType);
             }
-            if (!message.IsEdited) 
+            if (!message.IsEdited)
+            {
                 _dbContext.Messages.Add(message);
+                
+                if (fileData != null && fileType != null)
+                {
+                    message.EmbeddedResourceType = fileType;
+                    var file = FileFactory.CreateFile(fileType, fileData);
+                    FileStorageHelper.SaveFileToDbContext(file, _dbContext,message.MessageId);
+                }
+            }
             else
             {
                 var msg = _dbContext.Messages.First(x => x.MessageId == message.MessageId); msg.Text = message.Text; msg.IsEdited = true;

@@ -110,6 +110,10 @@ namespace BackendIM.Controllers
         {
             var messages = await _context.Messages
                 .Where(m => m.ConversationId == conversationId)
+                .Include(m => m.VoiceRecordings)
+                .Include(m => m.Documents)
+                .Include(m => m.Images)
+                .Include(m => m.Videos)
                 .OrderByDescending(m => m.SentTime)
                 .Skip(startIndex)
                 .Take(count)

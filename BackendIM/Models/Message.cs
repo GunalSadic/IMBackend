@@ -22,6 +22,7 @@ public partial class Message
     public bool IsScheduled { get; set; }
 
     public Conversation? Conversation { get; set; } = null!;
+
     public virtual ICollection<Document> Documents { get; set; } = new List<Document>();
 
     public virtual ICollection<Image> Images { get; set; } = new List<Image>();
