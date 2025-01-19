@@ -50,7 +50,7 @@ namespace BackendIM.Controllers
         {
 
             var conversation = await _context.Conversations
-                .Where(c => c.ConversationId == conversationId).Include(x=>x.Messages)
+                .Where(c => c.ConversationId == conversationId).Include(x=>x.Messages).ThenInclude(x=>x.Documents)
                 .Select(c => new
                 {
                     c.ConversationId,

@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace BackendIM.Hubs
 {
@@ -39,24 +40,18 @@ namespace BackendIM.Hubs
             }
             _dbContext.SaveChanges();
         }
-        public async Task SendMessage(Message message, byte[] fileData = null, string? fileType = null)
+        public async Task SendMessage(Message message)
         {
             Conversation conversation = _dbContext.Conversations.Where(x => x.ConversationId == message.ConversationId).Include(c=>c.ConversationParticipants).First();
             List<string> ConnectedUserIds = GetConnectedUserConnectionIds(conversation.ConversationParticipants, message.SenderId);
             foreach (string connectionId in ConnectedUserIds) {
                 Console.WriteLine($"Sending message to connection: {connectionId}");
-                await Clients.Client(connectionId).SendAsync("ReceiveMessage", message, fileData, fileType);
+                await Clients.Client(connectionId).SendAsync("ReceiveMessage", message);
             }
             if (!message.IsEdited)
             {
                 _dbContext.Messages.Add(message);
-                
-                if (fileData != null && fileType != null)
-                {
-                    message.EmbeddedResourceType = fileType;
-                    var file = FileFactory.CreateFile(fileType, fileData);
-                    FileStorageHelper.SaveFileToDbContext(file, _dbContext,message.MessageId);
-                }
+             
             }
             else
             {
@@ -65,6 +60,39 @@ namespace BackendIM.Hubs
                 
             await _dbContext.SaveChangesAsync();
         }
+        public async Task SendMediaMessage(Guid messageId, Guid conversationId)
+        {
+            // Retrieve the conversation and associated participants
+            Conversation conversation = _dbContext.Conversations
+                .Where(x => x.ConversationId == conversationId)
+                .Include(c => c.ConversationParticipants)
+                .FirstOrDefault();
+
+            if (conversation == null)
+            {
+                throw new Exception("Conversation not found.");
+            }
+
+            // Retrieve the message, including the documents
+            Message message = _dbContext.Messages
+                .Where(x => x.MessageId == messageId)
+                .Include(m => m.Documents)
+                .FirstOrDefault();
+
+            if (message == null)
+            {
+                throw new Exception("Message not found.");
+            }
+            List<string> connectedUserIds = GetAllConnectedUsersConnectionIds(conversation.ConversationParticipants);
+
+            // Send the message JSON to all connected users in the conversation
+            foreach (string connectionId in connectedUserIds)
+            {
+                Console.WriteLine($"Sending media to connection: {connectionId}");
+                await Clients.Client(connectionId).SendAsync("ReceiveMediaMessage", message);
+            }
+        }
+
 
         private List<string> GetConnectedUserConnectionIds(ICollection<ConversationParticipant> participants, string senderId)
         {
@@ -73,6 +101,17 @@ namespace BackendIM.Hubs
             {
                 if (participant.UserId == senderId)
                     continue;
+                var connectionsForUser = _connections.GetConnections(participant.UserId);
+                connectionIds.AddRange(connectionsForUser);
+            }
+            return connectionIds;
+        }
+
+        private List<string> GetAllConnectedUsersConnectionIds(ICollection<ConversationParticipant> participants)
+        {
+            List<string> connectionIds = new List<string>();
+            foreach (var participant in participants)
+            {
                 var connectionsForUser = _connections.GetConnections(participant.UserId);
                 connectionIds.AddRange(connectionsForUser);
             }
