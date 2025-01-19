@@ -95,7 +95,7 @@ namespace BackendIM.Hubs
             string ftpServer = "ftp://win6050.site4now.net";
             string username = "aamsteam-001";
             string password = "IMPassword1!";
-            string filePath = $"ftpServer/message.Sender.UserName/{message.Documents.First().FileName}";
+            string filePath = $"{ftpServer}/{message.Sender.UserName}/{message.Documents.First().FileName}";
             FTPHelper.UploadFile(message.Documents.First().Document1, filePath, username, password);
         }
 
