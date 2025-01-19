@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace BackendIM.Models;
 
@@ -21,6 +22,7 @@ public partial class Message
 
     public bool IsScheduled { get; set; }
 
+    [JsonIgnore]
     public Conversation? Conversation { get; set; } = null!;
 
     public virtual ICollection<Document> Documents { get; set; } = new List<Document>();

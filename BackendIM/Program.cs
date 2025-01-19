@@ -13,6 +13,7 @@ namespace BackendIM
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder
+                    .UseUrls("http://localhost:5106", "http://192.168.0.167:5106")
                     .UseStartup<Startup>();
                 });
     }

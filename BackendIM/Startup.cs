@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 
 namespace BackendIM
 {
@@ -23,7 +24,13 @@ namespace BackendIM
                options.UseSqlServer(Configuration["ConnectionString"]));
             services.AddControllers();
             services.AddEndpointsApiExplorer();
-            services.AddSwaggerGen();
+            services.AddSwaggerGen(c =>
+            {
+                // Add operation filter to handle file uploads
+                c.OperationFilter<FileUploadOperationFilter>();
+
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "My Messaging App", Version = "v1" });
+            });
             services.AddIdentity<User, IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).
                 AddJwtBearer(options =>
@@ -76,10 +83,14 @@ namespace BackendIM
             services.AddCors(options =>
             {
                 var frontendURL = Configuration.GetValue<string>("frontend_url");
-                options.AddDefaultPolicy(builder =>
-                {
-                    builder.WithOrigins("http://localhost:3000").AllowAnyMethod().AllowAnyHeader().AllowCredentials();
-                });
+                options.AddPolicy("AllowAnyOrigin",
+                    builder =>
+                    {
+                        builder.AllowAnyOrigin()       // Allows any origin
+                                .AllowAnyMethod()       // Allows any HTTP method (GET, POST, PUT, etc.)
+                                .AllowAnyHeader();      // Allows any headers
+                    });
+
             });
         }
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -91,9 +102,16 @@ namespace BackendIM
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Instant Messaging"));
             }
+
+            app.Use(async (context, next) =>
+            {
+                context.Request.Headers["Keep-Alive"] = "timeout=600";
+                await next.Invoke();
+            });
+
             app.UseRouting();
 
-            app.UseCors();
+            app.UseCors("AllowAnyOrigin");
 
             app.UseAuthentication();
             app.UseAuthorization();
