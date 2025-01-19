@@ -92,10 +92,10 @@ namespace BackendIM.Hubs
                 Console.WriteLine($"Sending media to connection: {connectionId}");
                 await Clients.Client(connectionId).SendAsync("ReceiveMediaMessage", message);
             }
-            string ftpServer = "win6050.site4now.net";
+            string ftpServer = "http://win6050.site4now.net";
             string username = "aamsteam-001";
             string password = "IMPassword1!";
-            string filePath = $"{ftpServer}/{message.Sender.UserName}/{message.Documents.First().FileName}.{message.Documents.First().DocumentType}";
+            string filePath = $"ftpServer/message.Sender.UserName/{message.Documents.First().FileName}";
             FTPHelper.UploadFile(message.Documents.First().Document1, filePath, username, password);
         }
 
