@@ -29,6 +29,8 @@ namespace BackendIM.Helpers
         {
             try
             {
+                string directoryPath = Path.GetDirectoryName(ftpPath);
+                EnsureDirectoryExists(directoryPath, username, password);
                 FtpWebRequest request = (FtpWebRequest)WebRequest.Create(ftpPath);
                 request.Method = WebRequestMethods.Ftp.UploadFile;
                 request.Credentials = new NetworkCredential(username, password);
@@ -70,6 +72,32 @@ namespace BackendIM.Helpers
             catch (Exception ex)
             {
                 Console.WriteLine($"Error downloading file: {ex.Message}");
+            }
+        }
+
+        public static void EnsureDirectoryExists(string directoryPath, string username, string password)
+        {
+            try
+            {
+                FtpWebRequest request = (FtpWebRequest)WebRequest.Create(directoryPath);
+                request.Method = WebRequestMethods.Ftp.MakeDirectory;
+                request.Credentials = new NetworkCredential(username, password);
+
+                using (FtpWebResponse response = (FtpWebResponse)request.GetResponse())
+                {
+                    Console.WriteLine($"Directory created: {directoryPath}, status {response.StatusDescription}");
+                }
+            }
+            catch (WebException ex)
+            {
+                if (ex.Response is FtpWebResponse response && response.StatusCode == FtpStatusCode.ActionNotTakenFileUnavailable)
+                {
+                    Console.WriteLine("Directory already exists or cannot be created.");
+                }
+                else
+                {
+                    Console.WriteLine($"Error creating directory: {ex.Message}");
+                }
             }
         }
     }
